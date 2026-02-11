@@ -62,7 +62,7 @@ Route::get('/checkout/{booking}', function (Booking $booking) {
 
 })->middleware('auth');
 
-
+/*sssss*/
 /*
 |--------------------------------------------------------------------------
 | Pago simulado (mock)
