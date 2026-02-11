@@ -45,4 +45,36 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+
+    public function providerProfile()
+{
+    return $this->hasOne(\App\Models\ProviderProfile::class);
+}
+
+
+public function services()
+{
+    return $this->hasMany(\App\Models\Service::class, 'provider_id');
+}
+
+
+
+public function availabilityRules()
+{
+    return $this->hasMany(\App\Models\AvailabilityRule::class, 'provider_id');
+}
+
+
+public function bookingsAsClient()
+{
+    return $this->hasMany(\App\Models\Booking::class, 'client_id');
+}
+
+public function bookingsAsProvider()
+{
+    return $this->hasMany(\App\Models\Booking::class, 'provider_id');
+}
+
+
 }
