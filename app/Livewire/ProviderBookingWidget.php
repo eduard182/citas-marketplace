@@ -94,62 +94,64 @@ class ProviderBookingWidget extends Component
     }
 
     public function reserve(): void
-    {
-        $this->validate([
-            'serviceId' => ['required','integer'],
-            'date' => ['required','date_format:Y-m-d'],
-            'time' => ['required'],
-        ]);
+{
+    $this->validate([
+        'serviceId' => ['required','integer'],
+        'date' => ['required','date_format:Y-m-d'],
+        'time' => ['required'],
+    ]);
 
-        $service = Service::where('provider_id', $this->provider->id)
-            ->where('active', true)
-            ->findOrFail($this->serviceId);
+    $service = \App\Models\Service::where('provider_id', $this->provider->id)
+        ->where('active', true)
+        ->findOrFail($this->serviceId);
 
-        $tz = 'America/Santiago';
-        $startAt = Carbon::parse($this->date.' '.$this->time, $tz);
-        $endAt = $startAt->copy()->addMinutes((int)$service->duration_min);
+    $tz = 'America/Santiago';
+    $startAt = \Carbon\Carbon::parse($this->date.' '.$this->time, $tz);
+    $endAt = $startAt->copy()->addMinutes((int)$service->duration_min);
 
-        // validar que el slot sigue libre
-        $conflict = Booking::where('provider_id', $this->provider->id)
-            ->whereIn('status', ['confirmed','pending_payment'])
-            ->where(function ($q) use ($startAt, $endAt) {
-                $q->where('start_at', '<', $endAt)
-                  ->where('end_at', '>', $startAt);
-            })
-            ->get()
-            ->first(function ($b) {
-                return !($b->status === 'pending_payment' && $b->lock_expires_at && now()->gt($b->lock_expires_at));
-            });
+    $conflict = \App\Models\Booking::where('provider_id', $this->provider->id)
+        ->whereIn('status', ['confirmed','pending_payment'])
+        ->where(function ($q) use ($startAt, $endAt) {
+            $q->where('start_at', '<', $endAt)
+              ->where('end_at', '>', $startAt);
+        })
+        ->get()
+        ->first(function ($b) {
+            return !($b->status === 'pending_payment' && $b->lock_expires_at && now()->gt($b->lock_expires_at));
+        });
 
-        if ($conflict) {
-            $this->addError('time', 'Ese horario ya fue tomado. Elige otro.');
-            $this->loadSlots();
-            return;
-        }
-
-        $booking = Booking::create([
-            'client_id' => Auth::id(),
-            'provider_id' => $this->provider->id,
-            'service_id' => $service->id,
-            'start_at' => $startAt,
-            'end_at' => $endAt,
-            'status' => 'pending_payment',
-            'lock_expires_at' => now()->addMinutes(15),
-        ]);
-
-        // luego aquí redirigimos a checkout/webpay
-        return redirect()->to('/checkout/'.$booking->id);
+    if ($conflict) {
+        $this->addError('time', 'Ese horario ya fue tomado. Elige otro.');
+        $this->loadSlots();
+        return; // ✅ esto sí está permitido (no devuelve valor)
     }
 
-    public function render()
-    {
-        $services = Service::where('provider_id', $this->provider->id)
-            ->where('active', true)
-            ->orderBy('name')
-            ->get();
+    $booking = \App\Models\Booking::create([
+        'client_id' => auth()->id(),
+        'provider_id' => $this->provider->id,
+        'service_id' => $service->id,
+        'start_at' => $startAt,
+        'end_at' => $endAt,
+        'status' => 'pending_payment',
+        'lock_expires_at' => now()->addMinutes(15),
+    ]);
 
-        return view('livewire.provider-booking-widget', [
-            'services' => $services,
-        ]);
-    }
+    // ✅ Livewire redirect correcto:
+    $this->redirect('/checkout/'.$booking->id);
+}
+
+public function render()
+{
+    $services = \App\Models\Service::where('provider_id', $this->provider->id)
+        ->where('active', true)
+        ->orderBy('name')
+        ->get();
+
+    return view('livewire.provider-booking-widget', [
+        'services' => $services,
+    ]);
+}
+
+
+
 }

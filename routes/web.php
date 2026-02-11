@@ -3,6 +3,18 @@
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
 
+Route::get('/p/{slug}', function ($slug) {
+    $provider = User::where('role', 'provider')
+        ->whereHas('providerProfile', fn($q) => $q->where('slug', $slug))
+        ->with(['providerProfile'])
+        ->firstOrFail();
+
+    return view('provider.show', compact('provider'));
+});
+
+
+
+
 Route::view('/', 'welcome');
 
 Route::view('dashboard', 'dashboard')
@@ -15,11 +27,4 @@ Route::view('profile', 'profile')
 
 require __DIR__.'/auth.php';
 
-Route::get('/p/{slug}', function ($slug) {
-    $provider = User::where('role', 'provider')
-        ->whereHas('providerProfile', fn($q) => $q->where('slug', $slug))
-        ->with(['providerProfile'])
-        ->firstOrFail();
 
-    return view('provider.show', compact('provider'));
-});
