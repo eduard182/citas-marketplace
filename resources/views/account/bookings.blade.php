@@ -15,10 +15,19 @@
                         </div>
                     </div>
 
-                    <div class="text-sm">
-                        <span class="inline-flex items-center rounded-full border border-slate-200 px-3 py-1">
-                            {{ $b->status }}
-                        </span>
+                 <div class="text-sm text-right">
+    <span class="inline-flex items-center rounded-full border border-slate-200 px-3 py-1">
+        {{ $b->status }}
+    </span>
+
+   @if($b->status === 'confirmed')
+        <div>
+            DEBUG URL: {{ $b->meeting_join_url }}
+        </div>
+    @endif
+</div>
+
+  
                     </div>
                 </div>
             @empty

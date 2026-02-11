@@ -5,6 +5,7 @@ use App\Models\User;
 use App\Models\Booking;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MockPaymentController;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,6 +87,26 @@ Route::get('/mi-cuenta/citas', function () {
     return view('account.bookings', compact('bookings'));
 
 })->middleware('auth');
+
+
+
+
+Route::get('/meet/{booking}', function (Booking $booking, Request $request) {
+    // solo el cliente o el proveedor puede entrar
+    abort_unless(auth()->check(), 403);
+    abort_unless(in_array(auth()->id(), [$booking->client_id, $booking->provider_id]), 403);
+
+    return view('meet.show', compact('booking'));
+})->middleware('auth');
+
+Route::get('/meet/{booking}/host', function (Booking $booking, Request $request) {
+    abort_unless(auth()->check(), 403);
+    abort_unless(auth()->id() === $booking->provider_id, 403);
+
+    return view('meet.host', compact('booking'));
+})->middleware('auth');
+
+
 
 
 /*
