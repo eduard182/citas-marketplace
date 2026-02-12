@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MockPaymentController;
 use Illuminate\Http\Request;
+use App\Http\Controllers\HomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,9 +14,13 @@ use Illuminate\Http\Request;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
+
+
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+
 
 
 /*
